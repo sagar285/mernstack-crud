@@ -14,7 +14,7 @@ const App = () => {
   const updatedata =async(id)=>{
     const newname =prompt("enter new name")
     const newage =prompt("enter new age");
-    const data = await axios.put(`https://mernstackcrud.onrender.com/${id}`,{name:newname,age:newage});
+    const data = await axios.put(`https://mernstackcrud.onrender.com/update/${id}`,{name:newname,age:newage});
     console.log(data);
     setlist(list.map((val)=>{
       return val._id==id? {_id:id,name:newname,age:newage}:val
@@ -24,7 +24,7 @@ const App = () => {
 
 
   const deletedata =async(id)=>{
-    const data = await axios.delete(`https://mernstackcrud.onrender.com/${id}`);
+    const data = await axios.delete(`https://mernstackcrud.onrender.com/delete/${id}`);
    setlist(list.filter((val)=>{
     return val._id!=id;
    }))
