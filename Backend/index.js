@@ -8,6 +8,10 @@ const port = 3000;
 app.use(express.json());
 app.use(cors());
 
+
+app.get("/",(req,res)=>{
+  res.send("server run perfectly");
+})
 app.post("/register",async(req,res)=>{
     let user = new User(req.body);
     let result = await user.save();
