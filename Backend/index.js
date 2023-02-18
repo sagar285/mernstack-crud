@@ -1,64 +1,100 @@
 const express = require("express");
 const app = express();
+require("./db/config");
+const User =require("./db/User");
+const Product =require("./db/Product");
 const cors =require("cors");
-const User = require("./databse");
 const port = 3000;
-
 app.use(express.json());
 app.use(cors());
 
+app.post("/register",async(req,res)=>{
+    let user = new User(req.body);
+    let result = await user.save();
+    result =result.toObject();
+    delete result.password
+    res.send(result);
+})
+
+app.post("/login",async(req,res)=>{
+  if(req.body.email && req.body.password){
+    let user =  await User.findOne(req.body).select("-password");
+    if(user){
+      res.send(user)
+    }
+    else{
+     res.send("no user found");
+    }
+  }
+  else{
+    res.send("user not found");
+  }
+ 
+})
+
+app.post("/addproduct",async(req,res)=>{
+  let product =new Product(req.body);
+  let result =await product.save();
+  res.send(result);
+})
+
+app.get("/products",async(req,res)=>{
+  let products = await Product.find({})
+  if(products.length>0){
+    res.send(products)
+  }
+  else{
+    res.send("no product found");
+  }
+})
+
+app.delete("/product/:id",async(req,res)=>{
+      const result =await Product.deleteOne({_id:req.params.id});
+      res.send(result);
+})
+
+app.get("/product/:id",async(req,res)=>{
+  let result =await Product.findOne({_id:req.params.id});
+  if(result){
+    res.send(result);
+  }
+  else{
+    res.send("result not found");
+  }
+})
+
+app.put("/product/:id",async(req,res)=>{
+  let result =await Product.updateOne({_id:req.params.id},{$set:req.body})
+  res.send(result);
+})
+
+app.get("/search/:key",async(req,res)=>{
+       let result = await Product.find(
+        {"$or":[ 
+          { name:{$regex:req.params.key}},
+          { price:{$regex:req.params.key}},
+          { category:{$regex:req.params.key}},
+          { company:{$regex:req.params.key}}
+        ]
+       })
+       res.send(result);
+})
+
+
 // home route
-app.get("/", (req, res) => {
-  res.send("server set up");
-});
+
 
 // create route
 
-app.post("/post", async (req, res) => {
-  try {
-    console.log(req.body);
-    const data = new User(req.body);
-    const save = await data.save();
-    res.send(save);
-  } catch (error) {
-    console.log(error);
-  }
-});
 
-// read data route
 
-app.get("/get", async (req, res) => {
-  try {
-    const finddata = await User.find({});
-    console.log(finddata);
-    res.send(finddata);
-  } catch (error) {
-    console.log(error);
-  }
-});
+
 
 // update route
 
-app.put("/update/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const update = await User.findByIdAndUpdate({ _id: id }, req.body, {
-      new: true,
-    });
-    res.send(update);
-  } catch (error) {
-    console.log(error);
-  }
-});
 
 // delete route
 
-app.delete("/delete/:id", async (req, res) => {
-  try {
-    const deletedata = await User.findByIdAndDelete(req.params.id);
-    res.send(deletedata);
-  } catch (error) {}
-});
 
 app.listen(port, () => {
   console.log(`server runing on ${port}`);
